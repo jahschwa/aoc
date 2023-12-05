@@ -1,3 +1,10 @@
+#          | Day01b   | Day01b_jfred | Day01b_jfred_list
+# ---------+----------+--------------+------------------
+#   10.txt | 0.005259 |   0.037673   | 0.015199
+#  100.txt | 0.008386 |   2.032034   | 0.147402
+# 1000.txt | 0.018800 | 180.659451   | 1.354501
+
+
 from collections import defaultdict
 import re
 
@@ -60,6 +67,26 @@ class Day01b_jfred(Day01b):
   def first_num(self, line, reverse=False):
 
     return super(Day01b, self).first_num(line, reverse)
+
+  def replace_words(self, line):
+
+    idx = 0
+    while True:
+      match = self.regex.search(line, idx)
+      if not match:
+        break
+      word = match.group()
+      line = (
+        line[: match.start()]
+        + self.words[word]
+        + word[-1]
+        + line[match.end() :]
+      )
+
+    return line
+
+
+class Day01b_jfred_list(Day01b_jfred):
 
   def replace_words(self, line):
 

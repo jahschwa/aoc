@@ -6,6 +6,7 @@ from inspect import getmembers, isclass
 from pathlib import Path
 import sys
 import time
+from traceback import print_exc
 
 from solution.base import Solution
 
@@ -32,34 +33,41 @@ def main(puzzle, input_file=None):
   spec.loader.exec_module(mod)
 
   cls = FMT_CLASS.format(num, which)
-  for (name, obj) in getmembers(mod, isclass):
-    if name == cls:
-      solution = obj()
-      break
-
-  puzzle_lines = [solution.parse(line) for line in puzzle_lines]
-  test_lines = [solution.parse(line) for line in test_lines]
-
-  cases = [
-    ('test', test_lines, test_expected, str),
-    ('puzzle', puzzle_lines, getattr(solution, 'SOLUTION', None), None),
+  solutions = [
+    obj() for (name, obj) in getmembers(mod, isclass)
+    if name.startswith(cls)
   ]
-  for (name, lines, expected, fmt) in cases:
-    print(f'===== {name} =====')
-    start = time.time()
-    observed = solution.solve(lines)
-    end = time.time()
-    print(f'Elapsed  : {end - start :.6f} sec')
-    if fmt:
-      observed = fmt(observed)
-    if expected:
-      print(f'Expected : {expected}')
-    print(f'Observed : {observed}')
-    if expected:
-      correct = observed == expected
-      print(f'Correct  : {correct}')
-      if not correct:
-        sys.exit(1)
+
+  for solution in solutions:
+    print(f'========== {type(solution).__name__} ==========')
+
+    puzzle_lines = [solution.parse(line) for line in puzzle_lines]
+    test_lines = [solution.parse(line) for line in test_lines]
+
+    cases = [
+      ('test', test_lines, test_expected, str),
+      ('puzzle', puzzle_lines, getattr(solution, 'SOLUTION', None), None),
+    ]
+    for (name, lines, expected, fmt) in cases:
+      print(f'----- {name} -----')
+      start = time.time()
+      try:
+        observed = solution.solve(lines)
+      except Exception:
+        print_exc()
+        continue
+      end = time.time()
+
+      print(f'Elapsed  : {end - start :.6f} sec')
+      if fmt:
+        observed = fmt(observed)
+      if expected:
+        print(f'Expected : {expected}')
+      print(f'Observed : {observed}')
+      if expected:
+        correct = observed == expected
+        print(f'Correct  : {correct}')
+
     print()
 
 

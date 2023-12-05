@@ -10,11 +10,12 @@ import time
 from solution.base import Solution
 
 
-def main(puzzle):
+def main(puzzle, input_file=None):
 
   (num, which) = (int(puzzle[:-1]), puzzle[-1])
 
-  input_file = INPUT_DIR / FMT_INPUT.format(num)
+  if not input_file:
+    input_file = INPUT_DIR / FMT_INPUT.format(num)
   with open(input_file) as f:
     puzzle_lines = [line.strip() for line in f]
 
@@ -82,6 +83,8 @@ def get_args():
   add = ap.add_argument
 
   add('puzzle', choices=SOLUTIONS, type=puzzle_id)
+
+  add('-i', '--input-file', type=Path)
 
   return ap.parse_args()
 

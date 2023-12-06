@@ -78,7 +78,13 @@ def main(
         if fmt:
           observed = fmt(observed)
         correct = observed == expected
-        print(f'Correct  : {correct}')
+        print(
+          'Correct  : {}{}{}'.format(
+            GREEN if correct else RED,
+            correct,
+            RESET,
+          )
+        )
 
     print()
 
@@ -137,6 +143,10 @@ def get_args():
 
   return args
 
+
+RED = '\033[91m'
+GREEN = '\033[92m'
+RESET = '\033[0m'
 
 YEARS = sorted(
   path.name

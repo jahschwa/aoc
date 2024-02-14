@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from day_04a import Card, Day04a
+from a import Card, Day04a
 
 
 class Day04b(Day04a):

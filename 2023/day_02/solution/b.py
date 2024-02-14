@@ -1,7 +1,7 @@
 from functools import reduce
 from operator import mul
 
-from day_02a import Day02a, Game
+from a import Day02a, Game
 
 
 class Day02b(Day02a):

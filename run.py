@@ -15,13 +15,18 @@ sys.path.insert(0, str(BASE_DIR))
 from base import Solution
 
 
+FILE_INPUT_EXAMPLE = 'example_{}.txt'
+FILE_INPUT_FINAL = 'final.txt'
+
+
 def main(
   year,
   num,
   which,
   solution_file,
   input_file=None,
-  test_input_file=None,
+  input_name=None,
+  example_input_file=None,
 ):
 
   sys.path.insert(0, str(solution_file.parent))
@@ -32,19 +37,19 @@ def main(
 
   cases = []
 
-  if test_input_file and test_input_file.is_file():
-    with open(test_input_file) as f:
-      test_lines = [line.strip() for line in f]
+  if example_input_file and example_input_file.is_file():
+    with open(example_input_file) as f:
+      example_lines = [line.strip() for line in f]
     cases.append(
-      ('test', test_lines[1:], test_lines[0], str)
+      ('example', example_lines[1:], example_lines[0], str)
     )
 
   if input_file and input_file.is_file():
     with open(input_file) as f:
-      puzzle_lines = [line.strip() for line in f]
+      lines = [line.strip() for line in f]
     cases.append((
-      'puzzle',
-      puzzle_lines,
+      input_name,
+      lines,
       lambda solution: getattr(solution, 'SOLUTION', None),
       None,
     ))
@@ -115,6 +120,7 @@ def get_args():
   add('puzzle', type=puzzle_id, help='[YEAR/]NUM{a,b} e.g. 1a, 2023/2b')
 
   add('-i', '--input-file', type=Path)
+  add('-I', '--input-name', default='final')
 
   args = ap.parse_args()
 
@@ -125,21 +131,19 @@ def get_args():
   if not year_dir.is_dir():
     ap.error(f'no such year {args.year}; choices: {", ".join(YEARS)}')
 
-  puzzle = f'{args.num:02d}{args.which}'
-
-  solution_dir = year_dir / 'solution'
-  args.solution_file = solution_dir / f'day_{puzzle}.py'
+  puzzle_dir = year_dir / f'day_{args.num:02d}'
+  args.solution_file = puzzle_dir / f'solution/{args.which}.py'
   if not args.solution_file.is_file():
     solutions = sorted(
       path.stem.split('_')[-1].strip('0')
-      for path in solution_dir.iterdir()
-      if path.suffix == '.py'
+      for path in year_dir.iterdir()
     )
-    ap.error(f'no such puzzle {puzzle}; choices: {", ".join(solutions)}')
+    ap.error(f'no such puzzle {args.num}; choices: {", ".join(solutions)}')
 
+  input_dir = puzzle_dir / 'input'
   if not args.input_file:
-    args.input_file = year_dir / 'input' / f'{args.num:02d}.txt'
-  args.test_input_file = year_dir / 'test_input' / f'{puzzle}.txt'
+    args.input_file = input_dir / FILE_INPUT_FINAL
+  args.example_input_file = input_dir / FILE_INPUT_EXAMPLE.format(args.which)
 
   return args
 

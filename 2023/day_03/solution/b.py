@@ -1,7 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
 
-from day_03a import Day03a, Part, Schematic
+from a import Day03a, Part, Schematic
 
 
 class Day03b(Day03a):

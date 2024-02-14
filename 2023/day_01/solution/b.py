@@ -8,7 +8,7 @@
 from collections import defaultdict
 import re
 
-from day_01a import Day01a
+from a import Day01a
 
 
 class Day01b(Day01a):

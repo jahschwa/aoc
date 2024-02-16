@@ -13,10 +13,11 @@ BASE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE_DIR))
 
 from base import Solution
+from puzzle_input import PuzzleInput
 
 
 FILE_INPUT_EXAMPLE = 'example_{}.txt'
-FILE_INPUT_FINAL = 'final.txt'
+FILE_INPUT_FINAL = 'final_{}.txt'
 
 
 def main(
@@ -26,7 +27,7 @@ def main(
   solution_file,
   input_file=None,
   input_name=None,
-  example_input_file=None,
+  example_file=None,
 ):
 
   sys.path.insert(0, str(solution_file.parent))
@@ -35,24 +36,13 @@ def main(
   mod = imp.module_from_spec(spec)
   spec.loader.exec_module(mod)
 
-  cases = []
+  cases = {}
 
-  if example_input_file and example_input_file.is_file():
-    with open(example_input_file) as f:
-      example_lines = [line.strip() for line in f]
-    cases.append(
-      ('example', example_lines[1:], example_lines[0], str)
-    )
+  if example_file and example_file.is_file():
+    cases['example'] = PuzzleInput.parse(example_file)
 
   if input_file and input_file.is_file():
-    with open(input_file) as f:
-      lines = [line.strip() for line in f]
-    cases.append((
-      input_name,
-      lines,
-      lambda solution: getattr(solution, 'SOLUTION', None),
-      None,
-    ))
+    cases[input_name] = PuzzleInput.parse(input_file)
 
   solutions = [
     obj() for (name, obj) in getmembers(mod, isclass)
@@ -62,9 +52,9 @@ def main(
   for solution in solutions:
     print(f'========== {type(solution).__name__} ==========')
 
-    for (name, lines, expected, fmt) in cases:
+    for (name, puzzle_input) in cases.items():
       print(f'----- {name} -----')
-      lines = [solution.parse(line) for line in lines]
+      lines = [solution.parse(line) for line in puzzle_input.lines]
       start = time.time()
       try:
         observed = solution.solve(lines)
@@ -73,23 +63,18 @@ def main(
         continue
       end = time.time()
 
-      if callable(expected):
-        expected = expected(solution)
+      expected = puzzle_input.solution
       print(f'Elapsed  : {end - start :.6f} sec')
-      if expected:
-        print(f'Expected : {expected}')
+      print(f'Expected : {expected}')
       print(f'Observed : {observed}')
-      if expected:
-        if fmt:
-          observed = fmt(observed)
-        correct = observed == expected
-        print(
-          'Correct  : {}{}{}'.format(
-            GREEN if correct else RED,
-            correct,
-            RESET,
-          )
+      correct = observed == expected
+      print(
+        'Correct  : {}{}{}'.format(
+          GREEN if correct else RED,
+          correct,
+          RESET,
         )
+      )
 
     print()
 
@@ -129,21 +114,28 @@ def get_args():
 
   year_dir = BASE_DIR / str(args.year)
   if not year_dir.is_dir():
-    ap.error(f'no such year {args.year}; choices: {", ".join(YEARS)}')
+    ap.error(f'no such year {args.year}; choices:\n    {", ".join(YEARS)}')
 
   puzzle_dir = year_dir / f'day_{args.num:02d}'
   args.solution_file = puzzle_dir / f'solution/{args.which}.py'
   if not args.solution_file.is_file():
     solutions = sorted(
-      path.stem.split('_')[-1].strip('0')
-      for path in year_dir.iterdir()
+      day.name.split('_', 1)[-1].strip('0') + solution.stem
+      for day in year_dir.iterdir()
+      if day.name.startswith('day_')
+      for solution in (day / 'solution').iterdir()
+      if solution.is_file()
     )
-    ap.error(f'no such puzzle {args.num}; choices: {", ".join(solutions)}')
+    ap.error('no such puzzle {}{}; choices for {}:\n    {}'.format(
+      args.num, args.which, args.year, ', '.join(solutions)
+    ))
 
   input_dir = puzzle_dir / 'input'
+
   if not args.input_file:
-    args.input_file = input_dir / FILE_INPUT_FINAL
-  args.example_input_file = input_dir / FILE_INPUT_EXAMPLE.format(args.which)
+    args.input_file = input_dir / FILE_INPUT_FINAL.format(args.which)
+
+  args.example_file = input_dir / FILE_INPUT_EXAMPLE.format(args.which)
 
   return args
 

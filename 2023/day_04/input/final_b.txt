@@ -1,0 +1,2 @@
+base = final_a.txt
+solution = 12263631

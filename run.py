@@ -17,12 +17,20 @@ from base import GREEN, RED, RESET, YELLOW, Result, Solution
 from puzzle_input import PuzzleInput
 
 
-def main(puzzle_dir, class_prefix, input_file=None, quiet=False, verbose=0):
+def main(
+  puzzle_dir: Path,
+  class_prefix: str,
+  input_file: Path | None = None,
+  quiet: bool = False,
+  skip: list = None,
+  verbose: int = 0,
+):
 
   runner = PuzzleRunner(
     class_prefix=class_prefix,
     puzzle_dir=puzzle_dir,
     extra_input=input_file,
+    skip=skip,
   )
   if verbose >= 2:
     pprint(runner)
@@ -38,6 +46,7 @@ class PuzzleRunner:
   puzzle_dir: Path
 
   extra_input: Path | None = None
+  skip: set | None = None
 
   _input_dir: Path = None
   _solution_dir: Path = None
@@ -50,6 +59,8 @@ class PuzzleRunner:
   SOLUTION_DIR_NAME = 'solution'
 
   def __post_init__(self):
+
+    self.skip = set(self.skip or [])
 
     self._input_dir = self.puzzle_dir / self.INPUT_DIR_NAME
     self._solution_dir = self.puzzle_dir / self.SOLUTION_DIR_NAME
@@ -86,7 +97,7 @@ class PuzzleRunner:
     inputs = [
       PuzzleInput.parse(path)
       for path in sorted(self._input_dir.iterdir())
-      if path.is_file()
+      if path.is_file() and path.name not in self.skip
     ]
 
     if self.extra_input:
@@ -220,6 +231,10 @@ def get_args():
   add(
     '-q', '--quiet', action='store_true',
     help='suppress warnings',
+  )
+  add(
+    '-s', '--skip', action='append',
+    help='skip file names (one name per -s)',
   )
   add(
     '-v', '--verbose', action='count', default=0,

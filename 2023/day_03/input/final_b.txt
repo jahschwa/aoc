@@ -1,2 +1,0 @@
-base = final_a.txt
-solution = 82301120

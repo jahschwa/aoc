@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from contextlib import nullcontext
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 import sys
 
@@ -10,7 +10,7 @@ import sys
 class PuzzleInput:
   path: Path
   solution: int
-  lines: list[str]
+  lines: list[str] = field(repr=False)
   base: Path = None
 
   SEP = '#'

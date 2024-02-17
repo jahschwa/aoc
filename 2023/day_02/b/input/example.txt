@@ -1,0 +1,2 @@
+base = ../../a/input/example.txt
+solution = 2286

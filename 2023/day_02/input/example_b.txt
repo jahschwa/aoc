@@ -1,2 +1,0 @@
-base = example_a.txt
-solution = 2286
